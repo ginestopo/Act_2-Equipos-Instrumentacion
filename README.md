@@ -10,7 +10,7 @@ En la presente actividad (actividad 2 de la asignatura), partiremos del proyecto
 ![foto_boya](images/boya.jpg)
 
 
-## Desarrollo
+## Estructura del proyecto e introducción
 
 En primer lugar se llevará a cabo el desarrollo de los ejemplos propuestos en la actividad. Estos ejemplos se encuentran en la siguiente ruta:
 
@@ -45,10 +45,8 @@ Finalmente se incorporarán todos los elementos en el proyecto final, que incluy
 
 ```
 
-- Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
+
+Antes de proceder he realizado una actualización del proyecto anterior por el siguiente motivo. En mi proyecto anterior hago uso de **delay()** para dar lugar al usuario a leer la información en pantalla. Resulta que esta instrucción es **bloqueante** por lo tanto resulta imposible hacer un control contínuo y en tiempo real de las variables de control y actuación que vamos a implementar en esta actividad. En el commit **08b91d1441e859ebd8cf3dd0dfaee7a83c15ee72** de la rama **main** puede observarse esta actualización, que nos permite empezar con la actividad.
 
 
 ## Made with ❤️ by 
