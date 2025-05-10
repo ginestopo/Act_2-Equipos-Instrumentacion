@@ -20,9 +20,9 @@ En primer lugar se llevará a cabo el desarrollo de los ejemplos propuestos en l
     |
     ejemplos_propuestos
                     |
-                    |-
+                    |- /ejemplo_1/
                     |
-                    |-
+                    |- /ejemplo_2/
                     |
                     .
                     .
@@ -34,6 +34,11 @@ Finalmente se incorporarán todos los elementos en el proyecto final, que incluy
 ```bash
   code
     |
+    |- /ejemplos_propuestos/
+    |              |
+    |              |- /ejemplo_1/
+    |              |- /ejemplo_2/ 
+    |              |- ... 
     |
     |- diagram.json
     |
@@ -48,8 +53,22 @@ Finalmente se incorporarán todos los elementos en el proyecto final, que incluy
 
 Antes de proceder he realizado una actualización del proyecto anterior por el siguiente motivo. En mi proyecto anterior hago uso de **delay()** para dar lugar al usuario a leer la información en pantalla. Resulta que esta instrucción es **bloqueante** por lo tanto resulta imposible hacer un control contínuo y en tiempo real de las variables de control y actuación que vamos a implementar en esta actividad. En el commit **08b91d1441e859ebd8cf3dd0dfaee7a83c15ee72** de la rama **main** puede observarse esta actualización, que nos permite empezar con la actividad.
 
+A continuación, se desarrollarán los ejemplos de circuitos simples propuestos en la actividad que servirán para llevar a cabo nuestro objetivo: Realizar un control sobre los actuadores (actuadores resistivos para calentar las baterías durante la noche y control de válvulas para líquidos refrigerantes durante el día) para mantener las baterías de la boya meteorológica en buen estado.
+
+
+## Desarrollo de ejemplo : aplicación Servomotor 
+
+El primer ejemplo interesante a implementar es el servo. Como en wokwi no disponemos de otro motor (además del stepper, que veremos más adelante), implementaremos el servo que puede ser usado para controlar una válvula que permita o impida el paos de líquido refrigerante para enfriar el sistema de baterías.
+
+Para implementarlo el control del servo, en este ejemplo hago uso de la librería [Servo.h](https://www.arduinolibraries.info/libraries/servo). 
+
+Este ejemplo consiste simplemente en conseguir movimiento por parte del servo. En el ejemplo final este movimiento será gobernado por una acción de control dependiente de la temperatura para el correcto funcionamiento de las baterías. 
+
+A continuación, se observa el ejemplo de servo desarrollado. En este ejemplo el servo se mueve en ambas direcciones 180 grados.
+
+![foto_boya](images/ejemplo1_servo.png)
 
 ## Made with ❤️ by 
 
-- [@ginestopo](https://github.com/ginestopo)
+- [@ginestopo](https://github.com/ginestopo) (Ginés Díaz Chamorro)
 

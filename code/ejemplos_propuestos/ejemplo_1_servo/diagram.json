@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard", "id": "bb1", "top": -223.8, "left": -160.4, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": -231.4,
+      "left": 40.2,
+      "rotate": 270,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "servo1:GND", "bb1:27b.h", "", [ "$bb" ] ],
+    [ "servo1:V+", "bb1:28b.h", "", [ "$bb" ] ],
+    [ "servo1:PWM", "bb1:29b.h", "", [ "$bb" ] ],
+    [ "bb1:27b.i", "bb1:bn.21", "green", [ "v0" ] ],
+    [ "servo1:V+", "bb1:bp.22", "green", [ "v0" ] ],
+    [ "uno:GND.1", "bb1:bn.1", "black", [ "v-18.6", "h-230.7" ] ],
+    [ "uno:5V", "bb1:bp.2", "red", [ "v29.3", "h-256" ] ],
+    [ "uno:11", "bb1:29b.j", "green", [ "v-18.6", "h-9.6" ] ]
+  ],
+  "dependencies": {}
+}
