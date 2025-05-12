@@ -66,7 +66,15 @@ Este ejemplo consiste simplemente en conseguir movimiento por parte del servo. E
 
 A continuación, se observa el ejemplo de servo desarrollado. En este ejemplo el servo se mueve en ambas direcciones 180 grados.
 
-![foto_boya](images/ejemplo1_servo.png)
+![foto_servo](images/ejemplo1_servo.png)
+
+## Desarrollo de ejemplo : aplicación motor paso a paso
+
+En este ejemplo se implementará el código y conexionado necesario para implementar un motor paso a paso en Arduino. Este motor tiene un comportamiento al anterior. Este motor se moverá tantas posiciones como pulsos se emitan. Por tanto, puede ser una forma alternativa de actuador sobre nuestro sistema de flujo refrigerante. La elección del motor paso a paso o servomotor para la aplicación de la boya meteorológica se justificará al final de este Readme.
+
+Para usar el motor paso a paso necesitamos un integrado adicional, conocido como driver chip, que puede proporcionar grandes cantidades de corriente a la bobina del motor. Wokwi soporta el driver A4988, por lo que es el que usaremos en esta actividad. Realmente podríamos conectar directamente el motor a Arduino, puesto que el motor de Wokwi no tiene en cuenta simulación de corriente. Pero implmentaré el driver para darle mayor realismo. Además, con el driver, solo necesitamos usar un pin del Arduino. En caso contrario ocuparíamos 4 pines que pueden ser necesario para otros módulos. En este ejemplo, vemos que por cada pulso, el motor se mueve 1.8 grados (necesarios 200 pasos para una revolución completa).
+
+![foto_steppet](images/ejemplo1_servo.png)
 
 ## Made with ❤️ by 
 
