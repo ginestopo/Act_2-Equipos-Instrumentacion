@@ -1,6 +1,8 @@
 
 # 🔵 Actividad 2 - Equipos e Instrumentación Electrónica
 
+**NOTA: Todo el código del repositorio estará comentado en inglés para evitar caracteres como ñ y así errores de compilación.**
+
 En la presente actividad (actividad 2 de la asignatura), partiremos del proyecto desarrollado en la actividad 1 para, en base a los parámetros medidos en la boya meteorológica, ser capaces de aplicar una acción de control sobre actuadores situados en la misma. En este caso, actuadores resistivos, que a partir del conocimiento del estado del clima mediante la medición de sus indicadores fundamentales (temperatura, humedad, iluminación, calidad del aire, viento…) determinarán las acciones de control y actuación que garanticen que el sistema de baterías se mantenga alrededor de los parámetros deseados (25 grados de temperatura y humedad al 80%).
 
 
@@ -87,7 +89,45 @@ A continuación se muestra la implementación en Wokwi.
 
 ![foto_74HC595](images/ejemplo3_74HC595.png)
 
+
+## Desarrollo de ejemplo : Control de leds con 74HC595 a partir de LDR
+
+En este ejemplo usaremos la salida del LDR para poder hacernos una idea de la intensidad lumínica a partir de un array de LEDS (desarrollado en el ejemplo anterior).
+En este ejemplo se realiza un mapeo de los posibles valores de salida del fotoresistor para mostrar un número de leds encendido en función de la intensidad de luz recibida. El mapeo puede entenderse como una regla de tres que, nos genera un número acotado en un rango deseado, dado un valor en un rango inicial. Se puede leer más sobre la función map aquí [map()](https://docs.arduino.cc/language-reference/en/functions/math/map/).
+
+El código clave que nos permite mapear el valor de salida del LDR en su equivalente en LEDs viene dado por el siguiente código.
+
+
+```C
+    int luxValue = getLux();
+
+    // constrain the value before mapping
+    int constrainedLux = constrain(luxValue, 0, 10000); 
+
+    // map to 0-8 because we have 8 leds
+    int ledsToTurnOn = map(constrainedLux, 0, 10000, 0, 9);
+
+    // avois getting out of range
+    ledsToTurnOn = constrain(ledsToTurnOn, 0, 8); 
+
+    // Turn on the necessary LEDs
+    for (int i = 0; i < ledsToTurnOn; i++) {
+        shiftWrite(i, HIGH);
+    }
+
+    // Turn off the rest
+    for (int i = ledsToTurnOn; i < 8; i++) {
+        shiftWrite(i, LOW);
+    }
+
+```
+
+![foto_74HC595](images/ejemplo4_74HC595_LEDS.png)
 ## Made with ❤️ by 
 
 - [@ginestopo](https://github.com/ginestopo) (Ginés Díaz Chamorro)
 
+
+## License
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)

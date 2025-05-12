@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-74hc595", "id": "sr1", "top": -116.54, "left": 265.3, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": -234, "left": -5.8, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led2", "top": -234, "left": 23, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led3", "top": -234, "left": 51.8, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led4", "top": -234, "left": 80.6, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led5", "top": -234, "left": 109.4, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led6", "top": -234, "left": 138.2, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led7", "top": -234, "left": 167, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led8", "top": -234, "left": 195.8, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": 252.8,
+      "left": -37.6,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "sr1:GND", "uno:GND.1", "black", [ "v48", "h-86.4" ] ],
+    [ "led1:C", "led2:C", "black", [ "v19.2", "h29.2" ] ],
+    [ "led2:C", "led3:C", "black", [ "v19.2", "h29.2" ] ],
+    [ "led3:C", "led4:C", "black", [ "v19.2", "h29.2" ] ],
+    [ "led4:C", "led5:C", "black", [ "v19.2", "h0.4" ] ],
+    [ "led5:C", "led6:C", "black", [ "v19.2", "h29.2" ] ],
+    [ "led6:C", "led7:C", "black", [ "v9.6", "h0.4", "v9.6", "h28.8" ] ],
+    [ "led7:C", "led8:C", "black", [ "v19.2", "h29.2" ] ],
+    [ "led1:C", "uno:GND.1", "black", [ "v172.8", "h106" ] ],
+    [ "sr1:Q7", "led1:A", "green", [ "v19.2", "h-172.8" ] ],
+    [ "sr1:Q6", "led2:A", "green", [ "v9.6", "h-134.4" ] ],
+    [ "sr1:Q5", "led3:A", "green", [ "v19.2", "h-96" ] ],
+    [ "sr1:Q4", "led4:A", "green", [ "v9.6", "h-48" ] ],
+    [ "sr1:Q3", "led5:A", "green", [ "v9.6", "h-163.2" ] ],
+    [ "sr1:Q2", "led6:A", "green", [ "v9.6", "h-124.8" ] ],
+    [ "sr1:Q1", "led7:A", "green", [ "v9.6", "h-86.4" ] ],
+    [ "sr1:Q0", "led8:A", "green", [ "v-18", "h-67.2" ] ],
+    [ "sr1:VCC", "uno:5V", "red", [ "v346.8", "h-9.6" ] ],
+    [ "sr1:DS", "uno:2", "blue", [ "v87.6", "h-57.6" ] ],
+    [ "sr1:OE", "uno:GND.1", "black", [ "v58.8", "h-192", "v67.2" ] ],
+    [ "sr1:STCP", "uno:4", "gray", [ "v10.8", "h-96" ] ],
+    [ "sr1:SHCP", "uno:3", "magenta", [ "v20.4", "h-96" ] ],
+    [ "ldr1:VCC", "uno:5V", "red", [ "h0" ] ],
+    [ "ldr1:GND", "uno:GND.2", "black", [ "h28.8", "v-0.4", "h9.6" ] ],
+    [ "ldr1:AO", "uno:A0", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
