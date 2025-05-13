@@ -1,10 +1,15 @@
 #include <SimpleDHT.h>
 #include <LiquidCrystal_I2C.h>
+#include <Servo.h>
+
+#define SERVO_PIN 11
 #define SENSORHT 7
 #define LDR_PIN 2
 
 SimpleDHT22 sensorht;
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C address 0x27, 16 column and 2 rows
+Servo myservo;  // create servo object to control a servo
+
 
 // LDR Characteristics
 const float GAMMA = 0.7;
@@ -18,14 +23,18 @@ String getAirQuality();
 String getWindDirection();
 
 // Variables to avoid blocking the system
-unsigned long previousMillis = 0;
+unsigned long previousMillisDisplay = 0;
+unsigned long previousMillisTemperature = 0;
 const long displayInterval = 2000; // Screen change interval (in milliseconds)
+const long deltaTemperatureInterval = 500; //This is how fast the temperature will be changing when applying hot/cold to the batteries
 int currentDisplay = 0;
 byte lastTemperature = 0;
 byte lastHumidity = 0;
 int lastLux = 0;
 String lastAirQuality = "";
 String lastWindDirection = "";
+int lastPos = 0;    // variable to store the servo position
+int currentBatteryTemp = 10;
 
 void setup() {
   //------- DHT22 setup -------
@@ -38,6 +47,10 @@ void setup() {
 
   //------- LDR setup -------
   pinMode(LDR_PIN, INPUT);
+
+  //------- Servo for cooling -----
+  myservo.attach(SERVO_PIN);  // attaches the servo on pin 9 to the servo object
+
 
   //built-in led
   pinMode(LED_BUILTIN, OUTPUT);
@@ -52,8 +65,8 @@ void loop() {
   updateSensorData();
   
   // Update the display in a non-blocking way
-  if (currentMillis - previousMillis >= displayInterval) {
-    previousMillis = currentMillis;
+  if (currentMillis - previousMillisDisplay >= displayInterval) {
+    previousMillisDisplay = currentMillis;
     
     switch(currentDisplay) {
       case 0:
@@ -75,6 +88,17 @@ void loop() {
     
     currentDisplay = (currentDisplay + 1) % 5; // Show the next param in the screen
   }
+
+  if(currentMillis - previousMillisTemperature >= deltaTemperatureInterval){
+    previousMillisTemperature = currentMillis;
+
+    if(((int)lastTemperature > currentBatteryTemp)){
+      currentBatteryTemp += 1;
+      Serial.print(currentBatteryTemp);
+    }
+  }
+
+  
 
   //day/night indicator (led ON when night)
   (lastLux > 50) ? digitalWrite(LED_BUILTIN, LOW) : digitalWrite(LED_BUILTIN, HIGH);

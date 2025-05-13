@@ -76,7 +76,7 @@ En este ejemplo se implementará el código y conexionado necesario para impleme
 
 Para usar el motor paso a paso necesitamos un integrado adicional, conocido como driver chip, que puede proporcionar grandes cantidades de corriente a la bobina del motor. Wokwi soporta el driver A4988, por lo que es el que usaremos en esta actividad. Realmente podríamos conectar directamente el motor a Arduino, puesto que el motor de Wokwi no tiene en cuenta simulación de corriente. Pero implmentaré el driver para darle mayor realismo. Además, con el driver, solo necesitamos usar un pin del Arduino. En caso contrario ocuparíamos 4 pines que pueden ser necesario para otros módulos. En este ejemplo, vemos que por cada pulso, el motor se mueve 1.8 grados (necesarios 200 pasos para una revolución completa).
 
-![foto_stepper](images/ejemplo1_servo.png)
+![foto_stepper](images/ejemplo2_stepper.png)
 
 
 ## Desarrollo de ejemplo : Control de leds con 74HC595
@@ -123,6 +123,22 @@ El código clave que nos permite mapear el valor de salida del LDR en su equival
 ```
 
 ![foto_74HC595](images/ejemplo4_74HC595_LEDS.png)
+
+##
+## Desarrollo de la funcionalidad completa
+
+Una vez terminados los ejemplos, debemos estudiar cuales son aquellos que nos conviene para implementar nuestra funcionalidad deseada. Nuestro objetivo es mantener la batería de las baterías a una temperatura constante. Esto implica tener capacidad de sensorizar la temperatura ambiente (ya implementada en la actividad 1) y poder actuar sobre la batería en función de ella. 
+
+Dicho esto, se procede a diseñar el siguiente sistema de regulación:
+
+- Cuando las baterías superen los 60ºC se hará circular un fluido refrigerante con una serie de conductos. Para ello, se eligirá un servomotor, puesto que a altas velocidades presenta más fuerza que un stepper. Por ello, el ejemplo_1 de stepper será el añadido a la aplicación de la actividad 1. A continuación podemos ver como el servo empujaría el fluido refrigerantes a través del sistema de baterías.
+
+![gear_pump](images/gear_pump.png)
+    
+- Cuando las baterías se encuentren por debajo de 5ºC, un conjunto de resistencias calefactables calentarán el sistema de baterías. Esto se modelará a partir de un led con con una resistencia Pull-down.
+
+Para este tipo de control, es necesario implementar un sistema de histéresis. De esta forma evitaremos que el sistema actuador sea demasiado repetitivo con el fin de mantener la temperatura objetivo.
+
 ## Made with ❤️ by 
 
 - [@ginestopo](https://github.com/ginestopo) (Ginés Díaz Chamorro)

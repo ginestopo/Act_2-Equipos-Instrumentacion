@@ -3,3 +3,4 @@
 
 SimpleDHT
 LiquidCrystal I2C
+Servo
