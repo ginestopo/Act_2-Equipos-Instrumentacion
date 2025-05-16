@@ -4,9 +4,7 @@
 
 #define SERVO_PIN 11
 #define SENSORHT 7
-//#define LDR_PIN 2
 #define HEAT_RESISTOR 12
-
 int LDR_PIN = A0;
 
 SimpleDHT22 sensorht;
