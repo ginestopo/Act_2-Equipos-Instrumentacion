@@ -4,7 +4,10 @@
 
 #define SERVO_PIN 11
 #define SENSORHT 7
-#define LDR_PIN 2
+//#define LDR_PIN 2
+#define HEAT_RESISTOR 12
+
+int LDR_PIN = A0;
 
 SimpleDHT22 sensorht;
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C address 0x27, 16 column and 2 rows
@@ -25,8 +28,10 @@ String getWindDirection();
 // Variables to avoid blocking the system
 unsigned long previousMillisDisplay = 0;
 unsigned long previousMillisTemperature = 0;
+unsigned long previousMillisLEDs = 0;
 const long displayInterval = 2000; // Screen change interval (in milliseconds)
 const long deltaTemperatureInterval = 500; //This is how fast the temperature will be changing when applying hot/cold to the batteries
+const long deltaLedIndicatorInterval = 1000; //This is how fast the LED indicator for temperature will be updated
 int currentDisplay = 0;
 byte lastTemperature = 0;
 byte lastHumidity = 0;
@@ -35,6 +40,123 @@ String lastAirQuality = "";
 String lastWindDirection = "";
 int lastPos = 0;    // variable to store the servo position
 int currentBatteryTemp = 10;
+String batteryAction = "NONE"; //The action to the batteries can be HEAT, NONE, COOL
+int servoPos = 0;
+
+// The 74HC595 uses a type of serial connection called SPI (Serial Peripheral Interface) that requires three pins:
+int datapin = 2; 
+int clockpin = 3;
+int latchpin = 4;
+
+// We'll also declare a global variable for the data we're
+// sending to the shift register:
+byte data = 0;
+
+/* Hysteresis diagram --> Level 0: Heat battery, Level 1: Do nothing, Level 2: Heat Battery
+ *
+ *
+ *   level
+ *   ^
+ *   |
+ * 4_|
+ *   |
+ *   |
+ *   |
+ * 3_|
+ *   |
+ *   |
+ *   | 
+ * 2_|. . . . . . . . __________
+ *   |                |  |      
+ *   |                v  ^      
+ *   |                |  |      
+ * 1_|. . .___________|__|            
+ *   |     |  |       .  .      
+ *   |     v  ^       .  .      
+ *   |     |  |       .  .      
+ * 0_|_____|__|______________________________________|  temperature in centigrades
+ *         |  |       |  |      
+ *         5  10     45  50    
+ *
+ */
+
+struct threshold {
+    unsigned int low;
+    unsigned int high;
+    unsigned int level;
+};
+
+// number os thresholds
+const int NB_THRESHOLDS = 2;
+
+// definition of the thresholds
+const struct threshold thresholds[NB_THRESHOLDS] = {
+    {5, 10, 1},   // low, high, level
+    {45, 50, 2}
+};
+
+// Hysteresis function (inspiration from https://github.com/lille-boy/hysteresis/blob/master/hysteresis.c)
+unsigned int hysteresis(unsigned int input_temp) {
+    static unsigned int current_level = 0;
+    static unsigned int prev_temp = 0;
+
+    if (input_temp >= prev_temp) {
+        // Ascending - use high threshold
+        for (int i = 0; i < NB_THRESHOLDS; i++) {
+            if (input_temp >= thresholds[i].high && thresholds[i].level > current_level) {
+                current_level = thresholds[i].level;
+            }
+        }
+    } else {
+        // Descending - use low threshold
+        for (int i = NB_THRESHOLDS - 1; i >= 0; i--) {
+            if (current_level == thresholds[i].level && input_temp <= thresholds[i].low) {
+                current_level = thresholds[i].level - 1;
+                break;
+            }
+        }
+    }
+
+    prev_temp = input_temp;
+    return current_level;
+}
+
+void clearSerialMonitor() {
+  for (int i = 0; i < 50; i++) {
+    Serial.println();
+  }
+}
+
+void shiftWrite(int desiredPin, boolean desiredState){
+
+// This function lets you make the shift register outputs
+// HIGH or LOW in exactly the same way that you use digitalWrite().
+
+  bitWrite(data,desiredPin,desiredState); //Change desired bit to 0 or 1 in "data"
+
+  // Now we'll actually send that data to the shift register.
+  // The shiftOut() function does all the hard work of
+  // manipulating the data and clock pins to move the data
+  // into the shift register:
+
+  shiftOut(datapin, clockpin, MSBFIRST, data); //Send "data" to the shift register
+
+  //Toggle the latchPin to make "data" appear at the outputs
+  digitalWrite(latchpin, HIGH); 
+  digitalWrite(latchpin, LOW); 
+}
+
+/*
+
+   _____ ______ _______ _    _ _____  
+  / ____|  ____|__   __| |  | |  __ \ 
+ | (___ | |__     | |  | |  | | |__) |
+  \___ \|  __|    | |  | |  | |  ___/ 
+  ____) | |____   | |  | |__| | |     
+ |_____/|______|  |_|   \____/|_|     
+                                      
+                                      
+*/
 
 void setup() {
   //------- DHT22 setup -------
@@ -55,8 +177,33 @@ void setup() {
   //built-in led
   pinMode(LED_BUILTIN, OUTPUT);
 
+  //heat resistor led
+  pinMode(HEAT_RESISTOR, OUTPUT);
+
+  // initialize 74HC595 pins
+  pinMode(datapin, OUTPUT);
+  pinMode(clockpin, OUTPUT);  
+  pinMode(latchpin, OUTPUT);
+
+
   Serial.begin(9600);
 }
+
+
+/*
+
+
+  _      ____   ____  _____  
+ | |    / __ \ / __ \|  __ \ 
+ | |   | |  | | |  | | |__) |
+ | |   | |  | | |  | |  ___/ 
+ | |___| |__| | |__| | |     
+ |______\____/ \____/|_|     
+                             
+                             
+
+
+*/
 
 void loop() {
   unsigned long currentMillis = millis();
@@ -65,10 +212,11 @@ void loop() {
   updateSensorData();
   
   // Update the display in a non-blocking way
-  if (currentMillis - previousMillisDisplay >= displayInterval) {
+  if (currentMillis - previousMillisDisplay >= displayInterval || batteryAction != "NONE") {
     previousMillisDisplay = currentMillis;
     
-    switch(currentDisplay) {
+    if(batteryAction == "NONE"){
+      switch(currentDisplay) {
       case 0:
         printLCD("Temperature (*C):", (int)lastTemperature);
         break;
@@ -84,21 +232,63 @@ void loop() {
       case 4:
         printLCD("Wind Direction: ", -1, 0, lastWindDirection);
         break;
+      }
+
+    }else{
+      printLCD("Battery Action!: ", -1, 0, batteryAction);
     }
     
     currentDisplay = (currentDisplay + 1) % 5; // Show the next param in the screen
+
   }
 
+  if (currentMillis - previousMillisLEDs >= deltaLedIndicatorInterval) {
+    previousMillisLEDs = currentMillis;
+    updateLedIndicator();
+  }
+
+  // This part of the code is the one in charge of managing the actions of the hysteresis
   if(currentMillis - previousMillisTemperature >= deltaTemperatureInterval){
     previousMillisTemperature = currentMillis;
 
-    if(((int)lastTemperature > currentBatteryTemp)){
-      currentBatteryTemp += 1;
-      Serial.print(currentBatteryTemp);
-    }
-  }
+    if(currentBatteryTemp != (int)lastTemperature && abs(currentBatteryTemp - (int)lastTemperature)  > 0.5){
+      unsigned int currentLevel = hysteresis((int)currentBatteryTemp);
 
-  
+      if(currentLevel == 1){ // the battery does not need action
+        batteryAction = "NONE";
+        myservo.write(-90);
+        digitalWrite(HEAT_RESISTOR, LOW);
+        if(currentBatteryTemp - (int)lastTemperature < 0){
+        currentBatteryTemp += 1;
+        }else{
+          currentBatteryTemp -= 1;
+        }
+      }
+
+      if(currentLevel == 2){ // the battery needs cooling
+        batteryAction = "COOL";
+        myservo.write(90);
+        currentBatteryTemp -= 1;
+      }
+
+      if(currentLevel == 0){ // the battery needs heat
+        batteryAction = "HEAT";
+        digitalWrite(HEAT_RESISTOR, HIGH);
+        currentBatteryTemp += 1;
+      }
+      
+      // emulating a clear log to read better
+      clearSerialMonitor();
+
+      Serial.println("----------------------------------------------------------");
+      Serial.println("Ambient Temperature: " + String((int)lastTemperature));
+      Serial.println("Battery Current Temperature: " + String(currentBatteryTemp));
+      Serial.println("Current Action: " + batteryAction);
+      Serial.println("----------------------------------------------------------");
+
+    }
+
+  }
 
   //day/night indicator (led ON when night)
   (lastLux > 50) ? digitalWrite(LED_BUILTIN, LOW) : digitalWrite(LED_BUILTIN, HIGH);
@@ -168,4 +358,21 @@ String getWindDirection(){
   }
 
   return "wind error";
+}
+
+void updateLedIndicator(){
+  // constrain the value before mapping
+  int constrainedLux = constrain(lastLux, 0, 10000); 
+  // map to 0-8 because we have 8 leds
+  int ledsToTurnOn = map(constrainedLux, 0, 10000, 0, 9);
+  // avois getting out of range
+  ledsToTurnOn = constrain(ledsToTurnOn, 0, 8); 
+  // Turn on the necessary LEDs
+  for (int i = 0; i < ledsToTurnOn; i++) {
+    shiftWrite(i, HIGH);
+  }
+  // Turn off the rest
+  for (int i = ledsToTurnOn; i < 8; i++) {
+    shiftWrite(i, LOW);
+  }
 }
