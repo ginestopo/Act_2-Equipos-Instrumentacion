@@ -50,7 +50,7 @@ int latchpin = 4;
 // sending to the shift register:
 byte data = 0;
 
-/* Hysteresis diagram --> Level 0: Heat battery, Level 1: Do nothing, Level 2: Heat Battery
+/* Hysteresis diagram --> Level 0: Heat battery, Level 1: Do nothing, Level 2: Cool Battery
  *
  *
  *   level
