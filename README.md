@@ -1,23 +1,17 @@
 
-# 🔵 Actividad 2 - Equipos e Instrumentación Electrónica
+# 🔵 Design of a Meteorological Buoy
 
-**NOTAS:** 
-- **Todo el código del repositorio estará comentado en inglés para evitar caracteres como ñ y así errores de compilación.**
-- **El proyecto final puede probarse en [este link](https://wokwi.com/projects/431134122051145729), aunque al final de este readme se justifica su desarrollo.**
+**NOTES:**
 
+* **The final project can be tested at [this link](https://wokwi.com/projects/431134122051145729), although its development is justified at the end of this readme.**
 
-En la presente actividad (actividad 2 de la asignatura), partiremos del proyecto desarrollado en la actividad 1 para, en base a los parámetros medidos en la boya meteorológica, ser capaces de aplicar una acción de control sobre actuadores situados en la misma. En este caso, actuadores resistivos, que a partir del conocimiento del estado del clima mediante la medición de sus indicadores fundamentales (temperatura, humedad, iluminación, calidad del aire, viento…) determinarán las acciones de control y actuación que garanticen que el sistema de baterías se mantenga alrededor de los parámetros deseados (25 grados de temperatura y humedad al 80%).
+In this project, control actions are implemented on the actuators of the meteorological buoy based on the measured environmental parameters. Specifically, resistive actuators are used, which—by analyzing key indicators such as temperature, humidity, light, air quality, and wind—determine the actions needed to maintain the battery system within the target parameters (25 °C and 80% humidity).
 
+![foto\_boya](images/boya.jpg)
 
+## Project Structure and Introduction
 
-
-
-![foto_boya](images/boya.jpg)
-
-
-## Estructura del proyecto e introducción
-
-En primer lugar se llevará a cabo el desarrollo de los ejemplos propuestos en la actividad. Estos ejemplos se encuentran en la siguiente ruta:
+First, we will develop the examples proposed in the activity. These examples are located at the following path:
 
 ```bash
   code
@@ -34,7 +28,7 @@ En primer lugar se llevará a cabo el desarrollo de los ejemplos propuestos en l
                     .
 ```
 
-Finalmente se incorporarán todos los elementos en el proyecto final, que incluye los siguientes archivos:
+Finally, all elements will be incorporated into the final project, which includes the following files:
 
 ```bash
   code
@@ -52,11 +46,10 @@ Finalmente se incorporarán todos los elementos en el proyecto final, que incluy
     |- sketch.ino 
     |
     |- wokwi-project.txt
-
 ```
 
+Before proceeding, I updated the previous project for the following reason. In my previous project, I used **delay()** to allow the user to read information on the screen. This instruction is **blocking**, so it is impossible to perform continuous and real-time control of the variables we are going to implement in this activity. This update can be seen in commit **08b91d1441e859ebd8cf3dd0dfaee7a83c15ee72** of the **main** branch, which allows us to start this activity. These changes use the **millis()** function as shown below:
 
-Antes de proceder he realizado una actualización del proyecto anterior por el siguiente motivo. En mi proyecto anterior hago uso de **delay()** para dar lugar al usuario a leer la información en pantalla. Resulta que esta instrucción es **bloqueante** por lo tanto resulta imposible hacer un control contínuo y en tiempo real de las variables de control y actuación que vamos a implementar en esta actividad. En el commit **08b91d1441e859ebd8cf3dd0dfaee7a83c15ee72** de la rama **main** puede observarse esta actualización, que nos permite empezar con la actividad. Estos cambios hacen uso de la instrucción **millis()** como se muestra a continuación:
 ```C
 unsigned long currentMillis = millis();
 .
@@ -70,50 +63,45 @@ if (currentMillis - previousMillisDisplay >= displayInterval || batteryAction !=
 }
 ```
 
-Esta instrucción, colocada en el loop del proyecto, es no bloqueante. Cada vez que se ejecute millis() podemos tener un timestamp que nos servira para comprobar si ha pasado el tiempo deseado. Si ha pasado, el tiempo deseado, entramos en el *if*, sino, no entramos. De esta forma, evitamor parar el programa en una línea y permitimos que otras acciones se lleven a cabo mientras tanto.
+This instruction, placed in the project loop, is non-blocking. Every time millis() is executed, we obtain a timestamp to check if the desired time has passed. If it has, we enter the *if*, otherwise we do not. In this way, we avoid stopping the program at a single line and allow other actions to occur simultaneously.
 
-A continuación, se desarrollarán los ejemplos de circuitos simples propuestos en la actividad que servirán para llevar a cabo nuestro objetivo: Realizar un control sobre los actuadores (actuadores resistivos para calentar las baterías durante la noche y control de válvulas para líquidos refrigerantes durante el día) para mantener las baterías de la boya meteorológica en buen estado.
+Next, we will develop the simple circuit examples proposed in the activity, which will serve our goal: to control the actuators (resistive actuators to heat the batteries at night and valve control for cooling fluids during the day) to keep the meteorological buoy’s batteries in good condition.
 
+## Example Development: Servo Motor Application
 
-## Desarrollo de ejemplo : Aplicación Servomotor 
+The first interesting example to implement is the servo. Since Wokwi does not provide other motors (apart from the stepper, which we will see later), we will implement the servo, which can be used to control a valve that allows or blocks the passage of cooling fluid to regulate the battery system.
 
-El primer ejemplo interesante a implementar es el servo. Como en wokwi no disponemos de otro motor (además del stepper, que veremos más adelante), implementaremos el servo que puede ser usado para controlar una válvula que permita o impida el paos de líquido refrigerante para enfriar el sistema de baterías.
+To control the servo in this example, I use the [Servo.h](https://www.arduinolibraries.info/libraries/servo) library.
 
-Para implementarlo el control del servo, en este ejemplo hago uso de la librería [Servo.h](https://www.arduinolibraries.info/libraries/servo). 
+This example simply achieves movement of the servo. In the final example, this movement will be governed by a control action dependent on temperature for the correct operation of the batteries.
 
-Este ejemplo consiste simplemente en conseguir movimiento por parte del servo. En el ejemplo final este movimiento será gobernado por una acción de control dependiente de la temperatura para el correcto funcionamiento de las baterías. 
+Below is the developed servo example. In this example, the servo moves 180 degrees in both directions.
 
-A continuación, se observa el ejemplo de servo desarrollado. En este ejemplo el servo se mueve en ambas direcciones 180 grados.
+![foto\_servo](images/ejemplo1_servo.png)
 
-![foto_servo](images/ejemplo1_servo.png)
+## Example Development: Stepper Motor Application
 
-## Desarrollo de ejemplo : Aplicación motor paso a paso
+In this example, we implement the code and wiring necessary to operate a stepper motor with Arduino. This motor behaves differently from the previous one. The stepper moves a number of positions corresponding to the pulses sent. Therefore, it can be an alternative actuator for our cooling fluid system. The choice between stepper motor and servo for the meteorological buoy application will be justified at the end of this Readme.
 
-En este ejemplo se implementará el código y conexionado necesario para implementar un motor paso a paso en Arduino. Este motor tiene un comportamiento al anterior. Este motor se moverá tantas posiciones como pulsos se emitan. Por tanto, puede ser una forma alternativa de actuador sobre nuestro sistema de flujo refrigerante. La elección del motor paso a paso o servomotor para la aplicación de la boya meteorológica se justificará al final de este Readme.
+To use the stepper motor, we need an additional IC, known as a driver chip, which can provide high currents to the motor coil. Wokwi supports the A4988 driver, which is what we will use in this activity. Technically, we could connect the motor directly to Arduino, since Wokwi does not simulate current. However, I implemented the driver for realism. Moreover, using the driver requires only one Arduino pin; otherwise, four pins would be occupied, which may be needed for other modules. In this example, each pulse moves the motor 1.8 degrees (requiring 200 steps for a full revolution).
 
-Para usar el motor paso a paso necesitamos un integrado adicional, conocido como driver chip, que puede proporcionar grandes cantidades de corriente a la bobina del motor. Wokwi soporta el driver A4988, por lo que es el que usaremos en esta actividad. Realmente podríamos conectar directamente el motor a Arduino, puesto que el motor de Wokwi no tiene en cuenta simulación de corriente. Pero implmentaré el driver para darle mayor realismo. Además, con el driver, solo necesitamos usar un pin del Arduino. En caso contrario ocuparíamos 4 pines que pueden ser necesario para otros módulos. En este ejemplo, vemos que por cada pulso, el motor se mueve 1.8 grados (necesarios 200 pasos para una revolución completa).
+![foto\_stepper](images/ejemplo2_stepper.png)
 
-![foto_stepper](images/ejemplo2_stepper.png)
+## Example Development: LED Control with 74HC595
 
+In this example, we will learn to control a series of outputs (in this case LEDs) via serial communication, specifically SPI (Serial Peripheral Interface). Using three pins (data, clock, latch), we can send instruction bytes to the IC to perform different functions. This greatly reduces the number of Arduino pins used.
 
-## Desarrollo de ejemplo : Control de leds con 74HC595
+The 74HC595 IC is implemented to sequentially turn LEDs on and off. This example will be useful for our meteorological buoy project, as it can indicate light intensity levels.
 
-En este ejemplo vamos a aprender a controlar una serie de salidas (en este caso leds) a partir de una comunicación serie, en este caso SPI (Serial Peripheral Interface). A partir de tres pines (data, clock, latch) podemos enviar bytes de instrucción por serie al integrado para desempeñar distintas funciones. Esto tiene la principal ventaja de que se reduce considerablemente el número de puertos usados en el Arduino. 
+Below is the Wokwi implementation.
 
-En este ejemplo se implementa el integrado 74HC595 para poder encender y apagar secuencialmente los leds. Este ejemplo resultará útil para implementar en nuestro proyecto de la boya meteorológica, puesto que puede servir para mostrar los niveles de intensidad lumínica.
+![foto\_74HC595](images/ejemplo3_74HC595.png)
 
-A continuación se muestra la implementación en Wokwi.
+## Example Development: LED Control with 74HC595 Based on LDR
 
-![foto_74HC595](images/ejemplo3_74HC595.png)
+In this example, we use the LDR output to estimate light intensity using an array of LEDs (developed in the previous example). The LDR output is mapped to a number of LEDs lit according to the light intensity. Mapping works like a proportion to generate a value in a desired range from an initial range. More on the map function can be found here: [map()](https://docs.arduino.cc/language-reference/en/functions/math/map/).
 
-
-## Desarrollo de ejemplo : Control de leds con 74HC595 a partir de LDR
-
-En este ejemplo usaremos la salida del LDR para poder hacernos una idea de la intensidad lumínica a partir de un array de LEDS (desarrollado en el ejemplo anterior).
-En este ejemplo se realiza un mapeo de los posibles valores de salida del fotoresistor para mostrar un número de leds encendido en función de la intensidad de luz recibida. El mapeo puede entenderse como una regla de tres que, nos genera un número acotado en un rango deseado, dado un valor en un rango inicial. Se puede leer más sobre la función map aquí [map()](https://docs.arduino.cc/language-reference/en/functions/math/map/).
-
-El código clave que nos permite mapear el valor de salida del LDR en su equivalente en LEDs viene dado por el siguiente código.
-
+The key code mapping the LDR output to LEDs is:
 
 ```C
     int luxValue = getLux();
@@ -124,7 +112,7 @@ El código clave que nos permite mapear el valor de salida del LDR en su equival
     // map to 0-8 because we have 8 leds
     int ledsToTurnOn = map(constrainedLux, 0, 10000, 0, 9);
 
-    // avois getting out of range
+    // avoid going out of range
     ledsToTurnOn = constrain(ledsToTurnOn, 0, 8); 
 
     // Turn on the necessary LEDs
@@ -136,31 +124,27 @@ El código clave que nos permite mapear el valor de salida del LDR en su equival
     for (int i = ledsToTurnOn; i < 8; i++) {
         shiftWrite(i, LOW);
     }
-
 ```
 
-![foto_74HC595](images/ejemplo4_74HC595_LEDS.png)
+![foto\_74HC595](images/ejemplo4_74HC595_LEDS.png)
 
-##
-## Desarrollo de la funcionalidad completa
+## Development of Complete Functionality
 
-Una vez terminados los ejemplos, debemos estudiar cuales son aquellos que nos conviene para implementar nuestra funcionalidad deseada. Nuestro objetivo es mantener la batería de las baterías a una temperatura constante. Esto implica tener capacidad de sensorizar la temperatura ambiente (ya implementada en la actividad 1) y poder actuar sobre la batería en función de ella. 
+Once the examples are completed, we must determine which are useful to implement the desired functionality. Our goal is to maintain the buoy batteries at a constant temperature. This requires sensing ambient temperature (already implemented in Activity 1) and acting on the batteries based on it.
 
-Dicho esto, se procede a diseñar el siguiente sistema de regulación de temperatura para las baterías:
+Thus, we design the following battery temperature regulation system:
 
-- Cuando las baterías superen los 50ºC se hará circular un fluido refrigerante con una serie de conductos. Para ello, se eligirá un servomotor, puesto que a altas velocidades presenta más fuerza que un stepper. Por ello, el ejemplo_1 de stepper será el añadido a la aplicación de la actividad 1. A continuación podemos ver como el servo empujaría el fluido refrigerantes a través del sistema de baterías.
+* When batteries exceed 50°C, a cooling fluid circulates through a series of conduits. A servo motor is chosen because it provides more force at high speed than a stepper. Thus, example\_1 of the stepper will be added to Activity 1. Below, the servo pushes the cooling fluid through the battery system.
 
-![gear_pump](images/gear_pump.png)
-    
-- Cuando las baterías se encuentren por debajo de 5ºC, un conjunto de resistencias calefactables calentarán el sistema de baterías. Esto se modelará a partir de un led con con una resistencia Pull-down.
+![gear\_pump](images/gear_pump.png)
 
-Para este tipo de control, es necesario implementar un sistema de histéresis. De esta forma evitaremos que el sistema actuador sea demasiado repetitivo con el fin de mantener la temperatura objetivo.
+* When batteries fall below 5°C, a set of heating resistors warms the system. This is modeled using an LED with a pull-down resistor.
 
-Con este fin, se ha desarrollado el siguiente esquema de histéresis.
+For this control, a hysteresis system is necessary to prevent the actuator from being too repetitive in maintaining the target temperature.
 
+The following hysteresis diagram has been developed:
 
 ```C
-   
 /* Hysteresis diagram --> Level 0: Heat battery, Level 1: Do nothing, Level 2: Cool Battery
  *
  *
@@ -188,30 +172,26 @@ Con este fin, se ha desarrollado el siguiente esquema de histéresis.
  *         5  10     45  50    
  *
  */
-
 ```
 
-Este esquema indica como tenemos 3 niveles y 4 thresholds. Los niveles significan lo siguiente:
+This diagram indicates 3 levels and 4 thresholds:
 
-- **2** **-->** Las baterías necesitan enfriado (en el código denominado "cooling").
-- **1** **-->** Las baterías se encuentran en una franja de temperatura aceptable (en el código denominado "none").
-- **0** **-->** Las baterías necesitan ser calentarse (en el código denominado "heat").
+* **2** **-->** Batteries need cooling (in code: "COOL").
+* **1** **-->** Batteries are within an acceptable temperature range (in code: "NONE").
+* **0** **-->** Batteries need heating (in code: "HEAT").
 
-Además, una vez establecida la temperatura ambiente, cuando nuestros actuadores (líquido refrigerante o resistencia calefactable) actúan sobre el sistema de baterías, la temperatura de las baterías no cambia de forma inmediata. Se ha programado teniendo en cuenta que, una vez se actúa sobre la batería (supongamos enfriándola) la temperatura de esta decrece lentamente (1 grado por cada 500 ms, que viene dado por la variable *deltaTemperatureInterval*) hasta alcanzar 45 grados. Después, como se ha dejado de actuar, la temperatura volverá a subir hacia la temperatura ambiente. Una vez alcance 50 de nuevo, se comenzará a refrigerar de nuevo. En este proceso de enfriamiento, podemos ver como el servo actua como válvula de acceso del fluido. Y así sistematicamente (y análogamente para temperaturas frías).
+Once ambient temperature is set, when actuators (cooling fluid or heating resistors) act, battery temperature does not change instantly. It decreases slowly (1°C per 500 ms, via *deltaTemperatureInterval*) until reaching 45°C. Then, when no longer acted upon, it rises back toward ambient temperature. Once it reaches 50°C again, cooling resumes. In this process, the servo acts as the fluid access valve, and similarly for heating at low temperatures.
 
-Para definir este comportamiento de histéresis me he inspirado del código encontrado en el [siguiente repo.](https://github.com/lille-boy/hysteresis/blob/master/hysteresis.c)
-No obstante, este código ha tenido que ser adaptado para nuestro caso, modificando los parámetros para dar lugar a un ciclo de histéresis de 2 niveles (en lugar de 4) con diferentes thresholds. Esta configuración personalizada se muestra a continuación.
-
+The hysteresis behavior is inspired by code from [this repo](https://github.com/lille-boy/hysteresis/blob/master/hysteresis.c) but adapted to our case, using 2 levels instead of 4, with different thresholds:
 
 ```C
-   
 struct threshold {
     unsigned int low;
     unsigned int high;
     unsigned int level;
 };
 
-// number os thresholds
+// number of thresholds
 const int NB_THRESHOLDS = 2;
 
 // definition of the thresholds
@@ -245,14 +225,12 @@ unsigned int hysteresis(unsigned int input_temp) {
     prev_temp = input_temp;
     return current_level;
 }
-
 ```
 
-
-Una vez desarrollada la lógica de la histéresis podemos aplicarla de forma no bloqueante en nuestro *loop()* con el siguiente código, que se encarga de la gestión en tiempo real de la actuación sobre el sistema de baterías. En este código se ve como la temperatura de la batería siempre va a ir siguiendo la temperatura ambiente (a un ritmo de 1 grado por 500ms) hasta alcanzarla. La temperatura de las baterías variará si hay actuación sobre ella, bien por el líquido refrigerante o bien por el sistema de resistencias calefactables.
+Once the hysteresis logic is developed, it can be applied non-blocking in our *loop()* as follows, managing real-time battery system actuation. Battery temperature follows ambient temperature (1°C per 500 ms) until reached. Temperature changes if actuated by cooling fluid or heating resistors:
 
 ```C
-  // This part of the code is the one in charge of managing the actions of the hysteresis
+  // This part of the code is in charge of managing the actions of the hysteresis
   if(currentMillis - previousMillisTemperature >= deltaTemperatureInterval){
     previousMillisTemperature = currentMillis;
 
@@ -296,15 +274,15 @@ Una vez desarrollada la lógica de la histéresis podemos aplicarla de forma no 
   }
 ```
 
-Adicionalmente, se ha implementado en la solución final el ejemplo del driver de leds para intensidad lumínica. El resto de sensores funcionan de acuerdo a la actividad 1 pero sin usar *delay()*, que son instrucciones bloqueantes.
+Additionally, the final solution implements the LED driver example for light intensity. Other sensors function as in Activity 1 but without using *delay()*, which is blocking.
 
-La implementación completa se muestra a continuación y puede probarse en [este link](https://wokwi.com/projects/431134122051145729):
+The complete implementation can be tested at [this link](https://wokwi.com/projects/431134122051145729):
 
-![foto_74HC595](images/implementacion_final.png)
-## Made with ❤️ by 
+![foto\_74HC595](images/implementacion_final.png)
 
-- [@ginestopo](https://github.com/ginestopo) (Ginés Díaz Chamorro)
+## Made with ❤️ by
 
+* [@ginestopo](https://github.com/ginestopo) (Ginés Díaz Chamorro)
 
 ## License
 
